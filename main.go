@@ -15,6 +15,7 @@ var (
 	db    *sql.DB
 	err   error
 	cache redis.Conn
+	env   string = "debug"
 )
 
 func initCache() {
@@ -84,9 +85,9 @@ func main() {
 	api.GET("/profile", getUsers)
 	api.DELETE("/users/:id", deleteUser)
 
-	api.PATCH("/update_name", updateUserName)
-	api.PATCH("/update_email", updateUserEmail)
-	api.POST("/update_password", updateUserPassword)
+	api.PATCH("/update-name", updateUserName)
+	api.PATCH("/update-email", updateUserEmail)
+	api.POST("/update-password", updateUserPassword)
 
 	api.POST("/signin", signIn)
 
@@ -94,7 +95,7 @@ func main() {
 	api.POST("/refresh", refreshToken)
 
 	api.GET("/forgot", ForgotPassword)
-	api.GET("/resetpass_request", ResetPasswordRequest)
+	api.GET("/resetpass-request", ResetPasswordRequest)
 	api.POST("/resetpass", ResetPassword)
 
 	api.HideBanner = true

@@ -73,7 +73,7 @@ func GenerateLink(email string) (string, error) {
 	}
 
 	domain := "http://172.30.17.67:9999"
-	link := domain + "/resetpass_request?token=" + token
+	link := domain + "/resetpass-request?token=" + token
 	return link, err
 }
 
@@ -129,9 +129,8 @@ func SendEmail(toEmail, link string) (err error) {
 	// log.Println(htmlStr)
 	from := os.Getenv("EMAIL")
 	password := os.Getenv("EMAIL_PASSKEY")
-	// log.Println("e=", from)
+	host := os.Getenv("HOST")
 	toList := []string{toEmail}
-	host := "smtp.gmail.com"
 	port := "587"
 	subject := "Subject: Password reset request\n"
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
@@ -210,7 +209,19 @@ func ResetPassword(c echo.Context) (err error) {
 	token := enteredCreds.Token
 	pass := enteredCreds.Data
 	log.Println("token=", token)
-	log.Println("pass=", pass)
+	// log.Println("pass=", pass)
+
+	// We then get the email of the user from our cache, where we set the token
+	email, err := cache.Do("GET", token)
+	if err != nil {
+		// If there is an error fetching from cache, return an internal server error status
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if email == nil {
+		// If the session token is not present in cache, return an unauthorized error
+		return c.String(http.StatusUnauthorized, "Password reset timed out.")
+	}
+
 	idSplitStr := strings.Split(token, "-")
 	idStr := idSplitStr[0]
 	id, err := strconv.ParseInt(idStr, 10, 64)
